@@ -9,17 +9,17 @@ sample_data = [{"name": "John    D.", "age": 30},
 
 def main() -> None:
     # Create a SparkSession
-    spark = SparkSession.builder.appName("Testing PySpark Example").getOrCreate()
-    df = spark.createDataFrame(sample_data)
+    spark: SparkSession = SparkSession.builder.appName("Testing PySpark Example").getOrCreate()
+    df: DataFrame = spark.createDataFrame(sample_data)
     print(f"Before transform data")
     df.show()
-    df = transform_data(df, "name")
+    df: DataFrame = transform_data(df, "name")
     print(f"After transform data")
     df.show()
 
 
 # Remove additional spaces in name
-def remove_extra_spaces(df, column_name):
+def remove_extra_spaces(df, column_name) -> DataFrame:
     # Remove extra spaces from the specified column
     df_transformed = df.withColumn(column_name, regexp_replace(col(column_name), "\\s+", " "))
     return df_transformed

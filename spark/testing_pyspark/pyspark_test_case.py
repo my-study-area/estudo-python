@@ -4,9 +4,9 @@ from pyspark.sql import SparkSession
 
 class PySparkTestCase(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
-        cls.spark = SparkSession.builder.appName("Testing PySpark Example").getOrCreate()
+    def setUpClass(cls) -> None:
+        cls.spark: SparkSession = SparkSession.builder.appName("Testing PySpark Example").getOrCreate()
 
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         cls.spark.stop()
