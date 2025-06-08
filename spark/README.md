@@ -195,7 +195,19 @@ Process finished with exit code 1
 ```
 Para corrigir basta configurar o `JAVA_HOME` nas configurações de execução no pycharm.
 
+Opção 1:
+
 Vá em `Run > Edit configurations ... ` e cole em **Enviroment variables**:
 ```commandline
 JAVA_HOME=/home/adriano/.asdf/installs/java/openjdk-17.0.2
+```
+
+Opção 2:
+
+Inicie o pycharm do seu terminal que já possui a variável de ambiente configurada
+
+Testes:
+```
+# dentro de ./spark/testing_pyspark
+pytest --cov ./ --cov-branch --cov-report term-missing
 ```
