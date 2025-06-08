@@ -1,0 +1,25 @@
+services:
+  localstack:
+    container_name: localstack
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      - DEBUG=${DEBUG:-0}
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+  glue:
+    image: public.ecr.aws/glue/aws-glue-libs:5
+    volumes:
+      - $PWD/.aws:/home/hadoop/.aws
+      - $PWD/src:/home/hadoop/workspace/src
+    environment:
+      - AWS_PROFILE=pyspark
+    command:
+      - -c
+      - |
+        tail -f /dev/null
+    depends_on:
+      - localstack

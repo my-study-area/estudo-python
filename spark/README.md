@@ -12,6 +12,25 @@ pip install -r requirements.txt
 spark-submit meu_primeiro_app.py
 ```
 
+## Pyspark
+Execução dos testes com Pyspark:
+```
+# dentro de ./spark/testing_pyspark
+pytest --cov ./ --cov-branch --cov-report term-missing
+```
+
+## Pyspark/Glue com docker
+```bash
+# dentro de spark/pyspark-glue
+
+docker compose up -d
+
+# acessa o bash do glue
+docker compose exec glue bash
+
+
+```
+
 ## Passo gerado pelo Gemini
 
 ### Passo 3: Testar o PySpark Shell Interativo
@@ -206,8 +225,95 @@ Opção 2:
 
 Inicie o pycharm do seu terminal que já possui a variável de ambiente configurada
 
-Testes:
+
+
+### Passo para resolver os problemas enfrentados ao configurar o docker com Glue/Pyspark e Localstack
+```bash
+docker run -it --rm -v /home/adriano/Downloads/testes/python/glue:/home/hadoop/workspace -v public.ecr.aws/glue/aws-glue-libs:5 -c bash
+docker run -it --rm -v $PWD:/home/hadoop/workspace -v $HOME:/home/hadoop/.aws -e AWS_PROFILE=localstack public.ecr.aws/glue/aws-glue-libs:5 -c bash
+
+spark-submit workspace/src/sample.py
+
+docker run -it --rm -v $PWD:/home/hadoop/workspace -v $HOME/.aws:/home/hadoop/.aws -e AWS_PROFILE=localstack --network=pyspark-glue_default public.ecr.aws/glue/aws-glue-libs:5 -c bash
+aws s3 ls --endpoint-url=http:localstack:4566
+
+
+
+aws configure --profile pyspark
+docker run -it --rm -v $PWD:/home/hadoop/workspace -v $HOME/.aws:/home/hadoop/.aws -e AWS_PROFILE=pyspark --network=pyspark-glue_default public.ecr.aws/glue/aws-glue-libs:5 -c bash
+aws s3 ls --endpoint-url=http://localstack:4566
+
+
+docker compose exec glue bash
 ```
-# dentro de ./spark/testing_pyspark
-pytest --cov ./ --cov-branch --cov-report term-missing
+
+```yml
+services:
+  glue:
+    image: public.ecr.aws/glue/aws-glue-libs:5
+    volumes:
+      - /home/adriano/Downloads/testes/python/glue:/home/hadoop/workspace
+    command: 
+      - -c 
+      - tail -f /dev/null
+
+```
+
+```
+# assisti um vídeo de configuração do pychram com o interpretador python apontando para o docker. O arquivo utilizado foi o exemplo abaixo:
+https://github.com/AdrianoNicolucci/dataenguncomplicated/blob/main/aws_glue/firstGlueScript.py
+
+# Url para acessar o LocalStack executado com docker. Obs: é necessário criar uma conta gratuita para acessar o painel web.
+https://app.localstack.cloud/
+
+
+aws s3api create-bucket --bucket teste
+
+# acessar como root no container
+docker exec -it -u root 49669e16189d bash
+
+# verica a comunicação com o localstack
+nc -vz localstack 4566
+```
+
+Backup da V1 do docker-compose.yml:
+```yml
+services:
+  localstack:
+    container_name: localstack
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      - DEBUG=${DEBUG:-0}
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  glue-job-runner:
+    container_name: glue-job-runner
+    image: public.ecr.aws/glue/aws-glue-libs:5 # Sua imagem Glue
+    # Certifique-se de que este contêiner possa se comunicar com o LocalStack
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      # Aponta o Spark para o endpoint do LocalStack para Glue e S3
+      - SPARK_CONF_spark.hadoop.fs.s3a.endpoint=http://localstack:4566
+      - SPARK_CONF_spark.hadoop.fs.s3a.path.style.access=true
+      - SPARK_CONF_spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem
+      - SPARK_CONF_spark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider
+      - AWS_ENDPOINT_URL=http://localstack:4566 # Para boto3 ou outras ferramentas AWS
+      # Isso é crítico para GlueContext e outras APIs AWS usarem LocalStack
+      - AWS_GLUE_ENDPOINT=http://localstack:4566
+    volumes:
+      - ./jobs:/home/glue_user/workspace # Mapeia seu diretório de jobs
+#      - ~/.aws:/home/glue_user/.aws:ro # Opcional: para usar perfis AWS locais
+    depends_on:
+      - localstack
+    command: ["tail", "-f", "/dev/null"] # Mantém o contêiner rodando para comandos manuais
+
+volumes:
+  localstack_data:
 ```
