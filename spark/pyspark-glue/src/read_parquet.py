@@ -29,23 +29,34 @@ spark = glueContext.spark_session
 
 # --- Caminho S3 do Arquivo Parquet ---
 # Este é o mesmo caminho de saída que você usou no script anterior.
-parquet_s3_path = "s3a://meu-bucket-dados-localstack/output/filtered_data/"
+parquet_filtered_s3_path = "s3a://meu-bucket-dados-localstack/output/filtered_data/"
 
-print_line(f"Lendo dados do arquivo Parquet em: {parquet_s3_path}")
+# Altere no read_parquet.py:
+parquet_dynamic_frame_s3_path = "s3a://meu-bucket-dados-localstack/output/dynamicframe_filtered_data/"
 
-# --- Leitura do Parquet ---
-try:
-    # Lendo o diretório Parquet (o Spark automaticamente encontra as partes)
-    df_parquet = spark.read.parquet(parquet_s3_path)
+def read_parquet(s3_path):
+    """
+    Função para ler um arquivo Parquet do S3 usando PySpark.
+    """
+    print_line(f"Lendo dados do arquivo Parquet em: {s3_path}")
 
-    print_line("Schema do DataFrame lido do Parquet:")
-    df_parquet.printSchema()
+    # --- Leitura do Parquet ---
+    try:
+        # Lendo o diretório Parquet (o Spark automaticamente encontra as partes)
+        df_parquet = spark.read.parquet(s3_path)
 
-    print_line("Dados lidos do Parquet:")
-    df_parquet.show()
+        print_line("Schema do DataFrame lido do Parquet:")
+        df_parquet.printSchema()
 
-except Exception as e:
-    print_line(f"Erro ao ler o arquivo Parquet: {e}")
+        print_line("Dados lidos do Parquet:")
+        df_parquet.show()
 
-# O Glue SparkContext geralmente se encerra automaticamente,
-# então não precisamos chamar glueContext.stop() ou sc.stop() aqui.
+    except Exception as e:
+        print_line(f"Erro ao ler o arquivo Parquet: {e}")
+
+    # O Glue SparkContext geralmente se encerra automaticamente,
+    # então não precisamos chamar glueContext.stop() ou sc.stop() aqui.
+
+if __name__ == "__main__":
+    read_parquet(parquet_filtered_s3_path)
+    read_parquet(parquet_dynamic_frame_s3_path)
