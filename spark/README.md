@@ -23,6 +23,7 @@ pytest --cov ./ --cov-branch --cov-report term-missing
 ```bash
 # dentro de spark/pyspark-glue
 
+# inicia containers
 docker compose up -d
 
 # acessa o bash do glue
@@ -31,24 +32,42 @@ docker compose exec glue bash
 # cria o bucket
 aws s3 mb s3://meu-bucket-dados-localstack
 
+# lista os buckets
+aws s3 ls
+
+# executa o script hello
+spark-submit workspace/src/hello.py
+
+# copia arquivo csv para bucket
 aws s3 cp workspace/src/data.csv s3://meu-bucket-dados-localstack/data/data.csv
 
+# lista arquivo csv
 aws s3 ls s3://meu-bucket-dados-localstack/data/
 
-spark-submit workspace/src/hello.py 
+# lê arquivo csv do bucket
 spark-submit workspace/src/read_s3_data.py 
+
+# transforma e carrega arquivo no bucket s3 como parquet
 spark-submit workspace/src/transform_and_load.py 
-spark-submit workspace/src/read_parquet.py 
 
-
-# Verifica se o arquivo parquet criado
+# Verifica se o arquivo parquet criado no localstack
 aws s3 ls s3://meu-bucket-dados-localstack/output/filtered_data/
+
+# lê arquivo parquet gerado anteriormente no s3
+spark-submit workspace/src/read_parquet.py 
 
 # copia do arquivo parquet do s3 para o diretório local
 aws s3 cp s3://meu-bucket-dados-localstack/output/filtered_data/part-00000-7d936b73-fd30-4e2d-888e-f9d2b1e8adc2-c000.snappy.parquet ./my_filtered_data.parquet
 
+# lê e escreve arquivo com dynamicframe no S3 
+spark-submit workspace/src/etl_with_dynamicframe.py
 
+# lê arquivos parquet gerado anteriormente no s3
+spark-submit workspace/src/read_parquet.py 
 ```
+
+> [!CAUTION]
+> Os arquivos sample e test-sample, precisam de uma conta válida na aws.
 
 ## Passo gerado pelo Gemini
 
