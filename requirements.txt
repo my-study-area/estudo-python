@@ -1,0 +1,5 @@
+numpy==1.22.0
+pymupdf
+torch==2.1.2
+transformers==4.33.0
+TTS==0.22.0
