@@ -1,14 +1,14 @@
 from pyspark.sql import SparkSession
 
 from src.domain.IExtract import IExtract
-from src.domain.contratos import Contratos
+from src.domain.participantes import Participantes
 
 
-class ExtractContratosFake(IExtract):
+class ExtractParticipantesFake(IExtract):
     def __init__(self, database_name: str, table_name: str):
         self.spark: SparkSession = (
             SparkSession.builder
-            .appName("read-json-file")
+            .appName("read-json-file-participantes")
             .master("local[*]")
             .getOrCreate()
         )
@@ -16,11 +16,13 @@ class ExtractContratosFake(IExtract):
         self.table_name = table_name
 
 
-    def extract(self) -> Contratos:
-        arquivo_json = "app/src/dados_contratos.json"
+    def extract(self) -> Participantes:
+        arquivo_json = "app/src/dados_participantes.json"
         df = (
             self.spark.read
             .option("multiline", "true")
             .json(arquivo_json)
         )
-        return Contratos(df)
+        df.printSchema()
+        df.show()
+        return Participantes(df)
