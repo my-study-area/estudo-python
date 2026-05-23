@@ -8,3 +8,8 @@
 ```bash
 pip install -r app/requirements.txt
 ```
+
+Executa o projeto:
+```bash
+python app/main.py 
+```

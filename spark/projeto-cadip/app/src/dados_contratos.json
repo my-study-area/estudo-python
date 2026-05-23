@@ -1,0 +1,20 @@
+[
+  {
+    "numero_contrato_servico": 1000000000,
+    "data_contratacao": "2026-01-01",
+    "valor_contratacao": 100.00,
+    "anomesdia": 20260101
+  },
+  {
+    "numero_contrato_servico": 2000000000,
+    "data_contratacao": "2026-02-22",
+    "valor_contratacao": 100.00,
+    "anomesdia": 20260101
+  },
+  {
+    "numero_contrato_servico": 3000000000,
+    "data_contratacao": "2026-12-11",
+    "valor_contratacao": 100.00,
+    "anomesdia": 20260101
+  }
+]

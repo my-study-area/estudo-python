@@ -1,1 +1,2 @@
-pyspark
+pyspark==4.1.2
+awsglue3-local==1.0.0
