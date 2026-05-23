@@ -1,0 +1,45 @@
+[
+  {
+    "identificacao_pessoa": "2f4da150-20a7-435a-96ac-c555ecef57e3",
+    "setor_empresa": 1000,
+    "enderecos": [
+      {
+        "cidade": "Cajati",
+        "estado": "SP",
+        "proposito": [1,2]
+      },
+      {
+        "cidade": "Jacupiranga",
+        "estado": "SP",
+        "proposito": [1,2]
+      },
+      {
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "proposito": [5,2]
+      }
+    ]
+  },
+  {
+    "identificacao_pessoa": "61759fcd-af3f-4512-bb98-441f24628cf7",
+    "setor_empresa": 2000,
+    "enderecos": [
+      {
+        "cidade": "Registro",
+        "estado": "SP",
+        "proposito": [3]
+      }
+    ]
+  },
+  {
+    "identificacao_pessoa": "cc96c76b-6d5c-4917-9c2a-8318549ab389",
+    "setor_empresa": 2001,
+    "enderecos": [
+      {
+        "cidade": "Cariri",
+        "estado":  "RS",
+        "proposito":  [3, 4]
+      }
+    ]
+  }
+]
