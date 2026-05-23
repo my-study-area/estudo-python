@@ -13,7 +13,7 @@ class ExtractContratosFake(IExtract):
             .getOrCreate()
         )
         self.database_name = database_name
-        self.database_name = table_name
+        self.table_name = table_name
 
 
     def extract(self) -> Contratos:
