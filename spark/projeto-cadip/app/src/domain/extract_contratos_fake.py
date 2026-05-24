@@ -1,10 +1,10 @@
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
 
 from src.domain.IExtract import IExtract
 from src.domain.contratos import Contratos
 
 
-class ExtractContratosFake(IExtract):
+class ExtractContratosFake(IExtract[Contratos]):
     def __init__(self, database_name: str, table_name: str):
         self.spark: SparkSession = (
             SparkSession.builder

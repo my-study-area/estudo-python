@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from pyspark.sql import DataFrame
+from typing import TypeVar, Generic
 
-class IExtract(ABC):
+T = TypeVar('T')
+
+class IExtract(ABC, Generic[T]):
     @abstractmethod
-    def extract(self) -> DataFrame:
+    def extract(self) -> T:
         pass

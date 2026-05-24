@@ -4,7 +4,7 @@ from src.domain.IExtract import IExtract
 from src.domain.dados_cadastrais import DadosCadastrais
 
 
-class ExtractDadosCadastraisFake(IExtract):
+class ExtractDadosCadastraisFake(IExtract[DadosCadastrais]):
     def __init__(self, database_name: str, table_name: str):
         self.spark: SparkSession = (
             SparkSession.builder
