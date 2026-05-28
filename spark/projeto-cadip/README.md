@@ -18,16 +18,16 @@ python app/main.py
 ## Design de classes - 1
 ```
 Contratos
-Participantes
+PosicoesDiaria
+DadosCadastrais
 IdentificaoPessoas
-DadosCadastrais(IdentificaoPessoas, Participantes)
-  -> filterIdentificadorBy(Participantes) -> IdentificacaoEntesPublicos:
-  -> filterParticipantesEnderecoPriorizado()
+Participantes
+Ipocs
+
+
 Tomadores
 Garantidores
-Ipocs
-IdentificacaoEntesPublicos
-ParticipantesEnderecoPriorizado
+EntesPublicosPriorizado
   __numero_contrato
   __id_pessoa
   __tipo_participante
@@ -35,12 +35,13 @@ ParticipantesEnderecoPriorizado
   __uf
   to_df()
 
-EntesPublicos(DadosCadastrais)
-  __data_frame
-  __participantes
-  __participantes_enderecos_priorizados
-  __identificao_pessoas
+
+EntesPublicos(DadosCadastrais, IdentificaoPessoas, Participantes)
   __dados_cadastrais
+  __identificao_pessoas
+  __participantes
+  __entes_publicos_priorizados
+  __data_frame
   -> _join()
   -> _filter()
   -> identificador
@@ -49,19 +50,22 @@ EntesPublicos(DadosCadastrais)
   -> to_df()
 
 
-
-Transformer(Contratos, IdentificacaoEntesPublicos)
-  __data_frame
-  __contratos_filtrados = filterBy(IdentificacaoEntesPublicos)
-  -> __filterBy(IdentificacaoEntesPublicos): Contratos
+DadosCadip(Contratos, PosicoesDiaria)
   -> adiciona_dados_ipoc(Ipoc)
-  -> adiciona_dados_tomadores(Tomadores)
-  -> adiciona_dados_garantidores(Garantidores)
+  -> adiciona_entes_publicos(EntesPublicos)
+  ->__filter_by(EntesPublicos)
+  -> to_df()
+
+
+Transformer(DadosCadip, EntesPublicos, Ipocs)
+  __dados_cadip
+  __entes_publicos
+  __data_frame
+  __ipocs
   -> tranform(): DadosCadip
 
 
-DadosCadip()
-  -> to_df()
+
 
 OutPutRegistro1(DadosCadip)
   __format()
