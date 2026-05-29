@@ -25,15 +25,13 @@ Participantes
 Ipocs
 
 
-Tomadores
-Garantidores
-EntesPublicosPriorizado
-  __numero_contrato
-  __id_pessoa
-  __tipo_participante
-  __municipio
-  __uf
-  to_df()
+
+DadosCadip(Contratos, PosicoesDiaria)
+  -> adiciona_dados_ipoc(Ipoc)
+  -> adiciona_entes_publicos(EntesPublicos)
+  ->__filter_by(EntesPublicos)
+  -> to_df()
+
 
 
 EntesPublicos(DadosCadastrais, IdentificaoPessoas, Participantes)
@@ -48,66 +46,70 @@ EntesPublicos(DadosCadastrais, IdentificaoPessoas, Participantes)
   -> tomadores
   -> garantidores
   -> to_df()
+EntesPublicosPriorizado
+  __numero_contrato
+  __id_pessoa
+  __tipo_participante
+  __municipio
+  __uf
+  to_df()
+Tomadores
+Garantidores
 
 
-DadosCadip(Contratos, PosicoesDiaria)
-  -> adiciona_dados_ipoc(Ipoc)
-  -> adiciona_entes_publicos(EntesPublicos)
-  ->__filter_by(EntesPublicos)
-  -> to_df()
+
+
+
+
+
+
+main.py
+
+
+GlueConfiguration
+IExtract
+ExtractContratos
+ExtractDadosCadastrais
+ExtractBuilder(GlueConfiguration)
+  ->build_extract_contrato()
+  ->build_extract_posicoes_diarias()
+  ->build_extract_dados_cadastrais()
+  ->build_extract_identificao_pessoas()
+  ->build_extract_participantes()
+  ->build_extract_ipocs()
+
 
 
 Transformer(DadosCadip, EntesPublicos, Ipocs)
+  __data_frame
   __dados_cadip
   __entes_publicos
-  __data_frame
   __ipocs
   -> tranform(): DadosCadip
 
+IEvent(DadosCadip)
+  -> execute(): IOutputFormatter
+Registro1Event()
+SNPEvent()
+IOutputFormatter(Generic[T])
+Registro1OutPutFormatter(DadosCadip)
+  ->format(): Registro1Template
+SNPOutputFormatter
+  ->format(): SNPNotification
+Registro1Template
+SNPNotification
 
-
-
-OutPutRegistro1(DadosCadip)
-  __format()
-  -> to_df()
-```
-
-
-
-
-
-
-## Design de classes - 1
-```
-Contratos
-Participantes
-IdentificaoPessoas
-DadosCadastrais
-Tomadores
-Garantidores
-Ipocs
-
-//contrato de entes publicos
-IdentificacoesEntesPublicos(IdentificaoPessoas, DadosCadastrais)
-ContratosEntesPublicos(Contratos, Participantes, IdentificacoesEntesPublicos)
-
-
-//Tomador e Garantidor
-DadosCadastraisEntesPublicos(DadosCadastrais, ContratosEntesPublicos)
-  -getTomadores()
-  -getGarantidores()
-
-
-//Dados Cadip
-DadosCadip(ContratosEntesPublicos)
-  adicionaTomador()
-  adicionaGarantidor()
-  adicionaIpoc()
+Executor(Transformer, List[IEvent])
+  __transformer
+  __eventos
+  ->run()
 
 ```
 
 
-Exemplo de filter:
+
+
+## Exemplo de filter
 ```python
 import sys
 from awsglue.transforms import *
