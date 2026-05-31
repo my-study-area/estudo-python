@@ -1,19 +1,19 @@
 from pyspark.sql import SparkSession
 
-from src.domain.IExtract import IExtract
 from src.domain.dados_cadastrais import DadosCadastrais
+from src.extract import IExtract
 
 
-class ExtractDadosCadastraisFake(IExtract[DadosCadastrais]):
-    def __init__(self, database_name: str, table_name: str):
+class DadosCadastraisFakeExtract(IExtract[DadosCadastrais]):
+    def __init__(self, database_name: str, table_name: str) -> None:
         self.spark: SparkSession = (
             SparkSession.builder
             .appName("read-json-file-dados-cadastrais")
             .master("local[*]")
             .getOrCreate()
         )
-        self.database_name = database_name
-        self.table_name = table_name
+        self.database_name: str = database_name
+        self.table_name: str = table_name
 
 
     def extract(self) -> DadosCadastrais:

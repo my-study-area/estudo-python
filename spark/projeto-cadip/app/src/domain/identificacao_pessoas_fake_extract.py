@@ -1,19 +1,19 @@
 from pyspark.sql import SparkSession
 
-from src.domain.IExtract import IExtract
 from src.domain.identificacao_pessoas import IdentificacaoPessoas
+from src.extract import IExtract
 
 
-class ExtractIdentificacaoPessoasFake(IExtract[IdentificacaoPessoas]):
-    def __init__(self, database_name: str, table_name: str):
+class IdentificacaoPessoasFakeExtract(IExtract[IdentificacaoPessoas]):
+    def __init__(self, database_name: str, table_name: str) -> None:
         self.spark: SparkSession = (
             SparkSession.builder
             .appName("read-json-file-identificacao-pessoas")
             .master("local[*]")
             .getOrCreate()
         )
-        self.database_name = database_name
-        self.table_name = table_name
+        self.database_name: str = database_name
+        self.table_name: str = table_name
 
 
     def extract(self) -> IdentificacaoPessoas:

@@ -3,7 +3,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 
 class Contratos:
-    def __init__(self, data_frame: DataFrame):
+    def __init__(self, data_frame: DataFrame) -> None:
         self.__data_frame = data_frame
 
     def to_df(self) -> DataFrame:
