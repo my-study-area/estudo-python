@@ -61,8 +61,6 @@ Garantidores
 
 
 
-
-
 main.py
 
 
@@ -88,13 +86,13 @@ Transformer(DadosCadip, EntesPublicos, Ipocs)
   -> tranform(): DadosCadip
 
 IEvent(DadosCadip)
-  -> execute(): IOutputFormatter
-Registro1Event()
-SNPEvent()
+  -> execute()
+Registro1Event(Registro1Template)
+SNPEvent(SNPNotification)
 IOutputFormatter(Generic[T])
 Registro1OutPutFormatter(DadosCadip)
   ->format(): Registro1Template
-SNPOutputFormatter
+SNPOutputFormatter(DadosCadip)
   ->format(): SNPNotification
 Registro1Template
 SNPNotification
