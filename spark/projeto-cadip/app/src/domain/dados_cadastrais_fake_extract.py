@@ -1,3 +1,5 @@
+from pathlib import Path
+from awsglue.context import GlueContext
 from pyspark.sql import SparkSession
 
 from src.domain.dados_cadastrais import DadosCadastrais
@@ -5,22 +7,16 @@ from src.extract import IExtract
 
 
 class DadosCadastraisFakeExtract(IExtract[DadosCadastrais]):
-    def __init__(self, database_name: str, table_name: str) -> None:
-        self.spark: SparkSession = (
-            SparkSession.builder
-            .appName("read-json-file-dados-cadastrais")
-            .master("local[*]")
-            .getOrCreate()
-        )
-        self.database_name: str = database_name
-        self.table_name: str = table_name
-
+    def __init__(self, glue_context: GlueContext) -> None:
+        self.spark: SparkSession = glue_context.spark_session
 
     def extract(self) -> DadosCadastrais:
-        arquivo_json = "app/src/dados_cadastrais.json"
+        caminho_base = Path(__file__).parent.parent
+        arquivo_json = str(caminho_base / "dados_cadastrais.json")
         df = (
             self.spark.read
             .option("multiline", "true")
             .json(arquivo_json)
         )
         return DadosCadastrais(df)
+
