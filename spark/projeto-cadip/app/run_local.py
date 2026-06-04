@@ -1,43 +1,35 @@
+from pyspark.sql import SparkSession
 from unittest.mock import MagicMock
 
-from awsglue.context import GlueContext
-from pyspark.sql import SparkSession
-
-from src.domain.contratos_fake_extract import ContratosFakeExtract
-
-
-def get_local_spark():
-    return SparkSession.builder \
-        .master("local[*]") \
-        .appName("LOCAL") \
-        .getOrCreate()
+from src.service import executor
+from src.service.executor import Executor
+from src.service.glue_configuration import GlueConfiguration
+from src.service.extract_builder import ExtractBuilderFactory, ExtractBuilder
 
 
-def mock_glue_session(func):
-    """
-    Decorator que substitui a spark_session do GlueContext
-    por uma sessão Spark local.
-    """
+def run() -> None:
+    print("Executando em ambiente LOCAL com Spark Session simulada...")
+    
+    # 1. Setup local mockado do Spark e Glue Context
+    spark = SparkSession.builder.master("local[*]").appName("LOCAL_TEST").getOrCreate()
+    mock_glue_context = MagicMock()
+    mock_glue_context.spark_session = spark
 
-    def wrapper(*args, **kwargs):
-        # Cria o mock do GlueContext
-        mock_glue_context = MagicMock(spec=GlueContext)
+    # 2. Criação do dicionário de args mockados
+    local_args = {
+        "JOB_NAME": "local_job",
+        "DATABASE_NAME": "db_custodia",
+        "TABLE_NAME": "tb_contratos",
+        "ENVIRONMENT": "LOCAL"  # Força o Builder a resolver como FakeExtractBuilder
+    }
 
-        # Cria a sessão Spark local e atribui ao mock
-        local_spark = get_local_spark()
-        mock_glue_context.spark_session = local_spark
+    # 3. Instancia a configuração e executa
+    glue_config: GlueConfiguration = GlueConfiguration(local_args, mock_glue_context)
+    builder: ExtractBuilder = ExtractBuilderFactory.create(glue_config)
+    executor: Executor = Executor(glue_config, builder)
+    executor.run()
 
-        # Passa o contexto mockado para a função
-        return func(mock_glue_context, *args, **kwargs)
 
-    return wrapper
-
-@mock_glue_session
-def run(glue_context):
-    print("Executando em ambiente local com Spark Session mockada...")
-    ContratosFakeExtract(glue_context).extract().to_df().show()
-
-    return None
 
 if __name__ == '__main__':
     run()
