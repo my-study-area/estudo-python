@@ -1,0 +1,10 @@
+[
+  {
+    "numero_contrato_servico": 1000000000,
+    "codigo_ipoc": "IPOC-123456"
+  },
+  {
+    "numero_contrato_servico": 2000000000,
+    "codigo_ipoc": "IPOC-789012"
+  }
+]
