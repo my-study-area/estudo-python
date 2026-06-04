@@ -259,3 +259,102 @@ from meu_pacote import *
 | **Expor a API pública do pacote** | `module-info.java` (exports...) | Lista `__all__` dentro do arquivo `__init__.py` |
 
 Em suma: no Python, você alcança a modularização organizando seu código em arquivos e pastas, usando o `__init__.py` como a "fachada" (Facade) do seu módulo, e confiando nos underscores para avisar outros desenvolvedores sobre o que é público e o que é privado.
+
+
+## Diagrama de classes
+
+```mermaid
+classDiagram
+    class IExtract {
+        <<interface>>
+        +extract() T*
+    }
+
+    class ContratosExtract {
+        -__glue_context GlueContext
+        -__database_name str
+        -__table_name str
+        +__init__(glue_context GlueContext)
+        +extract() Contratos
+    }
+    class ContratosFakeExtract {
+        -__glue_context GlueContext
+        +spark_session SparkSession
+        +__init__(glue_context GlueContext)
+        +extract() Contratos
+    }
+
+    IExtract <|.. ContratosExtract
+    IExtract <|.. ContratosFakeExtract
+
+    class Contratos {
+        -__data_frame DataFrame
+        +__init__(data_frame DataFrame)
+        +to_df() DataFrame
+    }
+
+    ContratosExtract ..> Contratos : cria
+    ContratosFakeExtract ..> Contratos : cria
+
+    class ExtractBuilder {
+        <<abstract>>
+        #_glue_context GlueContext
+        +__init__(glue_context GlueContext)
+        +build_extract_contrato() IExtract~Contratos~*
+        +build_extract_posicoes_diarias() IExtract~PosicoesDiaria~*
+        +build_extract_dados_cadastrais() IExtract~DadosCadastrais~*
+        +build_extract_identificao_pessoas() IExtract~IdentificacaoPessoas~*
+        +build_extract_participantes() IExtract~Participantes~*
+        +build_extract_ipocs() IExtract~Ipocs~*
+    }
+
+    class RealExtractBuilder {
+        +build_extract_contrato() IExtract~Contratos~
+        +build_extract_posicoes_diarias() IExtract~PosicoesDiaria~
+        +build_extract_dados_cadastrais() IExtract~DadosCadastrais~
+        +build_extract_identificao_pessoas() IExtract~IdentificacaoPessoas~
+        +build_extract_participantes() IExtract~Participantes~
+        +build_extract_ipocs() IExtract~Ipocs~
+    }
+
+    class FakeExtractBuilder {
+        +build_extract_contrato() IExtract~Contratos~
+        +build_extract_posicoes_diarias() IExtract~PosicoesDiaria~
+        +build_extract_dados_cadastrais() IExtract~DadosCadastrais~
+        +build_extract_identificao_pessoas() IExtract~IdentificacaoPessoas~
+        +build_extract_participantes() IExtract~Participantes~
+        +build_extract_ipocs() IExtract~Ipocs~
+    }
+
+    ExtractBuilder <|-- RealExtractBuilder
+    ExtractBuilder <|-- FakeExtractBuilder
+
+    class GlueConfiguration {
+        -_database_name str
+        -_table_name str
+        -_environment str
+        -_glue_context GlueContext
+        +__init__(args Dict, glue_context GlueContext)
+        +database_name() str
+        +table_name() str
+        +environment() str
+        +glue_context() GlueContext
+    }
+
+    class ExtractBuilderFactory {
+        +create(glue_config GlueConfiguration)$ ExtractBuilder
+    }
+
+    class Executor {
+        -__builder ExtractBuilder
+        -__context GlueConfiguration
+        +__init__(glue_configuration GlueConfiguration, builder ExtractBuilder)
+        +run() None
+    }
+
+    Executor --> ExtractBuilder
+    Executor --> GlueConfiguration
+    ExtractBuilderFactory ..> ExtractBuilder : cria
+```
+
+---
