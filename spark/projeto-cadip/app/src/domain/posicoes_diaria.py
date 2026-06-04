@@ -1,0 +1,14 @@
+from __future__ import annotations
+from pyspark.sql import DataFrame
+from pyspark.sql.functions import col
+
+class PosicoesDiaria:
+    def __init__(self, data_frame: DataFrame) -> None:
+        self.__data_frame = data_frame
+
+    def to_df(self) -> DataFrame:
+        return self.__data_frame.select(
+            col("numero_contrato_servico").cast("string").alias("numero_contrato"),
+            col("data_posicao").cast("string").alias("data_posicao"),
+            col("saldo_devedor").cast("double").alias("saldo_devedor")
+        )

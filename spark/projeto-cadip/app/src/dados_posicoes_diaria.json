@@ -1,0 +1,12 @@
+[
+  {
+    "numero_contrato_servico": 1000000000,
+    "data_posicao": "2026-06-03",
+    "saldo_devedor": 50.00
+  },
+  {
+    "numero_contrato_servico": 2000000000,
+    "data_posicao": "2026-06-03",
+    "saldo_devedor": 75.00
+  }
+]
