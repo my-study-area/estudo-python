@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
-from enum import Enum
 from typing import Type, Dict
 
 from awsglue.context import GlueContext
 from src.extract import IExtract
-from src.service import glue_configuration
 from src.service.glue_configuration import GlueConfiguration
 
 # Importações de domínio
@@ -16,20 +14,20 @@ from src.domain.participantes import Participantes
 from src.domain.ipocs import Ipocs
 
 # Importações dos Extratores Reais
-from src.domain.contratos_extract import ContratosExtract
-from src.domain.posicoes_diaria_extract import PosicoesDiariaExtract
-from src.domain.dados_cadastrais_extract import DadosCadastraisExtract
-from src.domain.identificacao_pessoas_extract import IdentificacaoPessoasExtract
-from src.domain.participantes_extract import ParticipantesExtract
-from src.domain.ipocs_extract import IpocsExtract
+from src.etl.contratos_extract import ContratosExtract
+from src.etl.posicoes_diaria_extract import PosicoesDiariaExtract
+from src.etl.dados_cadastrais_extract import DadosCadastraisExtract
+from src.etl.identificacao_pessoas_extract import IdentificacaoPessoasExtract
+from src.etl.participantes_extract import ParticipantesExtract
+from src.etl.ipocs_extract import IpocsExtract
 
 # Importações dos Extratores Fakes
-from src.domain.contratos_fake_extract import ContratosFakeExtract
-from src.domain.posicoes_diaria_fake_extract import PosicoesDiariaFakeExtract
-from src.domain.dados_cadastrais_fake_extract import DadosCadastraisFakeExtract
-from src.domain.identificacao_pessoas_fake_extract import IdentificacaoPessoasFakeExtract
-from src.domain.participantes_fake_extract import ParticipantesFakeExtract
-from src.domain.ipocs_fake_extract import IpocsFakeExtract
+from src.etl.contratos_fake_extract import ContratosFakeExtract
+from src.etl.posicoes_diaria_fake_extract import PosicoesDiariaFakeExtract
+from src.etl.dados_cadastrais_fake_extract import DadosCadastraisFakeExtract
+from src.etl.identificacao_pessoas_fake_extract import IdentificacaoPessoasFakeExtract
+from src.etl.participantes_fake_extract import ParticipantesFakeExtract
+from src.etl.ipocs_fake_extract import IpocsFakeExtract
 
 
 class ExtractBuilder(ABC):

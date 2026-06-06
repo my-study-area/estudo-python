@@ -5,7 +5,7 @@ from awsglue.dynamicframe import DynamicFrame
 from pyspark import SparkContext
 
 from src.service.glue_configuration import GlueConfiguration
-from src.service.extract_builder import ExtractBuilderFactory
+from src.etl.extract_builder import ExtractBuilderFactory
 
 def run(glue_config: GlueConfiguration) -> None:
     print(f"Executando no ambiente: {glue_config.environment}")

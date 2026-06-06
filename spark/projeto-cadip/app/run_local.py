@@ -1,10 +1,9 @@
 from pyspark.sql import SparkSession
 from unittest.mock import MagicMock
 
-from src.service import executor
 from src.service.executor import Executor
 from src.service.glue_configuration import GlueConfiguration
-from src.service.extract_builder import ExtractBuilderFactory, ExtractBuilder
+from src.etl.extract_builder import ExtractBuilderFactory, ExtractBuilder
 
 
 def run() -> None:
