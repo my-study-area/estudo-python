@@ -68,23 +68,22 @@ class RealExtractBuilder(ExtractBuilder):
     conectados ao catálogo de dados do AWS Glue.
     """
     def build_extract_contrato(self) -> IExtract[Contratos]:
-        # ContratosExtract no momento recebe apenas glue_context e possui banco/tabela fixos internamente
         return ContratosExtract(self._glue_context)
 
     def build_extract_posicoes_diarias(self) -> IExtract[PosicoesDiaria]:
-        return PosicoesDiariaExtract(self._glue_context, "db_custodia", "tb_posicoes_diaria")
+        return PosicoesDiariaExtract(self._glue_context)
 
     def build_extract_dados_cadastrais(self) -> IExtract[DadosCadastrais]:
-        return DadosCadastraisExtract(self._glue_context, "db_custodia", "tb_dados_cadastrais")
+        return DadosCadastraisExtract(self._glue_context)
 
     def build_extract_identificao_pessoas(self) -> IExtract[IdentificacaoPessoas]:
-        return IdentificacaoPessoasExtract(self._glue_context, "db_custodia", "tb_identificacao_pessoas")
+        return IdentificacaoPessoasExtract(self._glue_context)
 
     def build_extract_participantes(self) -> IExtract[Participantes]:
-        return ParticipantesExtract(self._glue_context, "db_custodia", "tb_participantes")
+        return ParticipantesExtract(self._glue_context)
 
     def build_extract_ipocs(self) -> IExtract[Ipocs]:
-        return IpocsExtract(self._glue_context, "db_custodia", "tb_ipocs")
+        return IpocsExtract(self._glue_context)
 
 
 class FakeExtractBuilder(ExtractBuilder):

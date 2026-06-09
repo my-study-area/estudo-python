@@ -45,8 +45,8 @@ pip install -r app/requirements.txt   # pyspark 4.1.2, awsglue3-local, mypy
 
 - **`main.py:run()` está desconectado** — `__main__` (linha 96) chama `run_job()` (leitura simples do catálogo), **não** `run()` (pipeline completo). O pipeline completo só funciona via `run_local.py` ou se você conectar manualmente.
 - **Sem `__init__.py`** — `.gitignore` (raiz) ignora `*/__init__.py`. Não crie esses arquivos.
-- **Database/table name**: cada extract real declara `DATABASE_NAME = "db_custodia"` e `TABLE_NAME = "tb_*"` como constantes de módulo; construtor recebe apenas `glue_context`.
-- **3 real extracts não implementados**: `DadosCadastraisExtract`, `IdentificacaoPessoasExtract`, `ParticipantesExtract` (lançam `Exception`).
+- **Database/table name**: cada extract real declara `__DATABASE_NAME` / `__TABLE_NAME` como constantes privadas de classe; construtor recebe apenas `glue_context`.
+- **Todos os 6 real extracts implementados**: seguem o mesmo padrão com `__DATABASE_NAME`/`__TABLE_NAME` como constantes privadas de classe e `extract()` com `DynamicFrame.from_catalog`.
 - **Typo em filename**: `app/src/indentificacao_pessoas.json` (falta "ta").
 - **Transformação/relatórios descritos no README** (`DadosCadip`, `EntesPublicos`, `Transformer`, `IEvent`) **não estão implementados**.
 
