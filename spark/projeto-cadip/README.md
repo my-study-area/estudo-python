@@ -377,4 +377,221 @@ classDiagram
     ExtractBuilderFactory ..> ExtractBuilder : cria
 ```
 
----
+
+## Design de classes - 1
+
+```
+# =========================================================
+# = Domínio Externo
+# =========================================================
+Contratos(data_frame: DataFrame)
+  def is_empty()
+  def filter_by_entes_publicos(dados_cadastrais, identificao_pessoas, participantes)
+    select 
+    conn.* 
+    from contratos contratos
+    inner join participantes participantes on (participantes.numero_contrato - contratos.numero_contrato) 
+    inner join identificao_pessoas identificacao on (identificacao.id_pessoa = participantes.id_pessoa)
+    inner join dados_cadastrais dados on (dados.id_pessoa = identificacao.id_pessoa)
+    where participantes.tipo_participante = participantes.codigo_tipo_participante_tomador --tomador
+    and contratos.data_contratacao = (date() - 1)
+    and dados.setor_empresa in (dados_cadastrais.setores_empresas_publicas) -- setor empresas
+  def to_df()
+
+
+PosicoesDiaria(data_frame: DataFrame)
+  ->to_df
+
+
+
+Participantes(data_frame: DataFrame)
+  @property
+  codigo_tipo_participante_tomador = 2
+  def to_df()
+
+
+
+DadosCadastrais()
+  self.__setores_empresas_publicas_default = [1000, 2000] 
+
+  def __init__(data_frame: DataFrame, setores_empresas_publicas_customizado):
+    self.setores_empresas_publicas = setores_empresas_publicas_customizado
+
+  @property
+  def setores_empresas_publicas(setores_empresas_publicas):
+    if __is_valid(setores_empresas_publicas):
+      return setores_empresas_publicas.split(',')
+    return self.__setores_empresas_publicas_default
+
+  def __is_valid(input)
+    return bool(re.fullmatch(r'\d+(,\d+)*', s))
+
+  def -> get_tomadores(participantes, identificao_pessoas) -> Tomadores:
+  def -> get_garantidores(participantes, identificao_pessoas) -> Garantidores:
+  def ->to_df
+
+
+
+IdentificaoPessoas(data_frame: DataFrame)
+  def to_df()
+
+
+Ipocs(data_frame: DataFrame)
+  def to_df()
+
+
+# =========================================================
+# = Domínio CADIP
+# =========================================================
+DadosCadip(contratos: Contratos, posicoes_diaria: PosicoesDiaria,ipocs: Ipocs, tomadores: Tomadores, garantidores: Garantidores)
+  def to_df()
+
+Tomadores(data_frame: DataFrame)
+  def to_df()
+
+Garantidores(data_frame: DataFrame)
+  def to_df()
+
+
+
+
+
+# =========================================================
+# = ETL
+# =========================================================
+############ Extract
+GlueConfiguration
+IExtract
+ExtractContrato
+ExtractPosicoesDiarias
+ExtractDadosCadastrais
+ExtractIdentificaoPessoas
+ExtractParticipantes
+ExtractIpocs
+ExtractBuilder(GlueConfiguration)
+  def build_extract_contrato():
+  def build_extract_posicoes_diarias():
+  def build_extract_dados_cadastrais():
+  def build_extract_identificao_pessoas():
+  def build_extract_participantes():
+  def build_extract_ipocs():
+
+ExtractBuilderFactory(glue_configuration: GlueConfiguration)
+
+
+
+
+
+
+
+############ Transform
+Transformer(extract_builder_factory)
+  __data_frame
+  def tranform(extract_builder_factory): DadosCadip
+    # invariantes
+    contratos = extract_builder_factory.build_contratos()
+    if contratos.is_empty()
+      throw BusinessException('Não existem contratos para realizar o processamento')
+
+    participantes = extract_builder_factory.build_participantes()
+    if participantes.is_empty()
+      throw BusinessException('Não existem participantes para realizar o processamento')
+
+    identificao_pessoas = extract_builder_factory.build_extract_identificao_pessoas()
+    if identificao_pessoas.is_empty()
+      throw BusinessException('Não existem identificao_pessoas para realizar o processamento')
+
+    dados_cadastrais = extract_builder_factory.build_extract_dados_cadastrais()
+    if dados_cadastrais.is_empty()
+      throw BusinessException('Não existem dados_cadastrais para realizar o processamento')
+
+    # regra de negócio (somente contratos de entes publicos)
+    contratos_filtrados = contratos.filter_by_entes_publicos(participantes,identificao_pessoas, dados_cadastrais)
+    if (contratos_filtrados.is_empty())
+      throw BusinessException('Não existem contratos de entes públicos')
+
+    # Dados obrigatórios no processamento, mas permite que sejam vazio. Geramos DadosCadip com valores padrão, caso não exista
+    posicoes_diaria = extract_builder_factory.build_extract_posicoes_diarias()
+    ipocs = extract_builder_factory.build_extract_ipocs()
+    tomadores = dados_cadastrais.get_tomadores()
+    garantidores = dados_cadastrais.get_garantidores()
+
+    # dataframes
+    df_contratos = contratos.toDF()
+    df_posicoes_diaria = posicoes_diaria.toDF()
+    df_participantes = participantes.toDF()
+    df_identificao_pessoas = identificao_pessoas.toDF()
+    df_tomadores = tomadores.toDF()
+    df_garantidores = garantidores.toDF()
+    df_ipocs = ipocs.toDF()
+
+    __data_frame = 
+    select
+    contratos.*
+    from df_contratos contratos
+    left join df_posicoes_diaria posicoes on (posicoes.numero_contrato = contratos.numero_contrato)
+    left join df_tomadores tomadores on (tomadores.numero_contrato = contratos.numero_contrato)
+    left join df_garantidores garantidores on (garantidores.numero_contrato = contratos.numero_contrato)
+    left join df_ipocs ipocs on (ipocs.numero_contrato = contratos.numero_contrato)
+
+    return DadosCadip(data_frame)
+
+
+
+
+############ Load
+Loader(template: TemplateRegistro1)
+  def load() -> None:
+    print('loading ...')
+
+
+FormatterRegistro1
+  def format() -> DataFrame:
+    print('formating ...')
+
+
+
+TemplateRegistro1(data_frame: DataFrame)
+  def __init__ (self, data_frame: DataFrame) -> None:
+    self.__data_frame = data_frame
+
+  def to_df() -> DataFrame:
+   return self.__data_frame
+
+
+
+=========================================================
+= ENTRYPOINT
+=========================================================
+############ main.py
+Executor(transformer, formatter, Loader loader)
+  ->run()
+    try
+      transformer.tranform(extract_builder_factory)
+      dados_cadip = transformer.tranform()
+      template = TemplateRegistro1(formatter.format(dados_cadip))
+      loader.load(template)
+      logger.info('Processamento realizado com sucesso. Total de registros: {template.count()}')
+
+    except BusinessException as ex:
+      logger.info('Processamento finalizado. Motivo: {ex}')
+      return
+    except Exception ex:
+      logger.exception('Erro ao realizar processamento. Erro: {ex}')
+      raise
+
+
+
+def run():
+  extract_builder = ExtractBuilderFactory(glue_configuration).build()
+  transformer = Transformer(extract_builder_factory)
+  formatter = FormatterRegistro1()
+  load = Loader()
+  executor = Executor(transformer, formatter, loader)
+  executor.run()
+
+if __name__ == '__main__':
+    run()
+```
+
+
