@@ -119,6 +119,61 @@ def __get_glue_schema(self) -> StructType:
     return StructType(fields)
 ```
 
+
+<details>
+<summary>EXPLICAÇÃO SOBRE ISEMPTY</summary>
+`rdd.isEmpty()` é custoso porque força uma ação (job Spark) só para checar se há dados — mesmo otimizado internamente (ele tenta ler 1 partição primeiro), ainda dispara execução do plano.
+
+Opções, da mais para a menos recomendada:
+
+**1. `df.take(1)` ou `df.limit(1).count()`**
+Equivalente em custo ao `isEmpty()`, mas mais explícito. `limit(1)` ajuda o otimizador a parar na primeira linha encontrada.
+
+```python
+if len(data_frame.take(1)) == 0:
+    data_frame = self.__create_empty_dataframe()
+```
+
+**2. Verificar pelo DynamicFrame antes de converter (mais barato)**
+`dynamic_frame.count()` em alguns casos é mais leve que materializar o DataFrame, mas ainda é uma ação.
+
+**3. Checar metadados do catálogo antes de extrair (melhor opção para o seu caso)**
+Já que você está tratando "tabela existe mas vazia" vs "tabela não existe", você pode verificar via `boto3` se a tabela tem partições/arquivos **antes** de rodar o `from_catalog`, evitando o job inteiro:
+
+```python
+def __table_has_data(self) -> bool:
+    glue_client = boto3.client("glue")
+    try:
+        partitions = glue_client.get_partitions(
+            DatabaseName=self.__class__.__DATABASE_NAME,
+            TableName=self.__class__.__TABLE_NAME,
+            MaxResults=1
+        )
+        return len(partitions["Partitions"]) > 0
+    except glue_client.exceptions.EntityNotFoundException:
+        return False
+```
+
+Limitação: só funciona se a tabela for particionada. Se não for particionada, esse check não detecta arquivos vazios — só existência da tabela.
+
+**4. Aceitar o custo do `isEmpty()`/`take(1)` mas só rodar uma vez**
+Na prática, para a maioria dos jobs Glue, esse check custa pouco comparado ao processamento total do job. Se o DataFrame já vai ser usado depois (cache), considere:
+
+```python
+data_frame = data_frame.cache()
+if data_frame.rdd.isEmpty():
+    data_frame = self.__create_empty_dataframe()
+```
+
+Isso evita reprocessar os dados quando forem usados novamente — mas adiciona custo de memória.
+
+**Recomendação prática**: para o seu caso (try/except para "tabela não existe" + check de vazio), o `try/except` já cobre o cenário "tabela não existe no catálogo" sem custo de job. Para "existe mas vazio", `take(1)` é suficiente e mais barato que `isEmpty()` na prática, pois `limit(1)` permite ao Spark parar de ler assim que encontra 1 registro — especialmente eficiente em fontes colunares como Parquet com metadados de estatísticas.
+
+Se a maioria das execuções espera dados (caso comum), o custo do check é desprezível. Se vazio é frequente e a tabela é particionada, prefira a opção 3 para evitar o job inteiro.
+
+
+</details>
+
 ## Exemplo modularização
 No Python, o conceito é exatamente o mesmo: queremos esconder a complexidade interna e expor apenas o que é necessário. Porém, a forma de fazer isso é filosoficamente diferente do Java.
 
