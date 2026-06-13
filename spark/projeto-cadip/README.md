@@ -411,24 +411,36 @@ Participantes(data_frame: DataFrame)
 
 
 
-DadosCadastrais()
-  self.__setores_empresas_publicas_default = [1000, 2000] 
+class DadosCadastrais:
+    __SETORES_EMPRESAS_PUBLICAS_DEFAULT = [1000, 2000]
 
-  def __init__(data_frame: DataFrame, setores_empresas_publicas_customizado):
-    self.setores_empresas_publicas = setores_empresas_publicas_customizado
+    def __init__(self, data_frame: DataFrame, setores_empresas_publicas_customizado: str = None):
+        self.__data_frame = data_frame
+        self.setores_empresas_publicas = setores_empresas_publicas_customizado
 
-  @property
-  def setores_empresas_publicas(setores_empresas_publicas):
-    if __is_valid(setores_empresas_publicas):
-      return setores_empresas_publicas.split(',')
-    return self.__setores_empresas_publicas_default
+    @property
+    def setores_empresas_publicas(self):
+        return self.__setores_empresas_publicas
 
-  def __is_valid(input)
-    return bool(re.fullmatch(r'\d+(,\d+)*', s))
+    @setores_empresas_publicas.setter
+    def setores_empresas_publicas(self, valor):
+        if valor is not None and self.__is_valid(valor):
+            self.__setores_empresas_publicas = [int(x.strip()) for x in valor.split(',')]
+        else:
+            self.__setores_empresas_publicas = self.__SETORES_EMPRESAS_PUBLICAS_DEFAULT
 
-  def -> get_tomadores(participantes, identificao_pessoas) -> Tomadores:
-  def -> get_garantidores(participantes, identificao_pessoas) -> Garantidores:
-  def ->to_df
+    @staticmethod
+    def __is_valid(input_str: str) -> bool:
+        return bool(re.fullmatch(r'\s*\d+\s*(,\s*\d+\s*)*', input_str))
+
+    def get_tomadores(self, participantes, identificacao_pessoas):
+        pass
+
+    def get_garantidores(self, participantes, identificacao_pessoas):
+        pass
+
+    def to_df(self) -> DataFrame:
+        return self.__data_frame
 
 
 
