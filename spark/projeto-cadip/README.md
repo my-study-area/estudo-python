@@ -14,99 +14,6 @@ Executa o projeto:
 python app/main.py 
 ```
 
-
-## Design de classes - 1
-```
-Contratos
-PosicoesDiaria
-DadosCadastrais
-IdentificaoPessoas
-Participantes
-Ipocs
-
-
-
-DadosCadip(Contratos, PosicoesDiaria)
-  -> adiciona_dados_ipoc(Ipoc)
-  -> adiciona_entes_publicos(EntesPublicos)
-  ->__filter_by(EntesPublicos)
-  -> to_df()
-
-
-
-EntesPublicos(DadosCadastrais, IdentificaoPessoas, Participantes)
-  __dados_cadastrais
-  __identificao_pessoas
-  __participantes
-  __entes_publicos_priorizados
-  __data_frame
-  -> _join()
-  -> _filter()
-  -> identificador
-  -> tomadores
-  -> garantidores
-  -> to_df()
-EntesPublicosPriorizado
-  __numero_contrato
-  __id_pessoa
-  __tipo_participante
-  __municipio
-  __uf
-  to_df()
-Tomadores
-Garantidores
-
-
-
-
-
-
-main.py
-
-
-GlueConfiguration
-IExtract
-ExtractContratos
-ExtractDadosCadastrais
-ExtractBuilder(GlueConfiguration)
-  ->build_extract_contrato()
-  ->build_extract_posicoes_diarias()
-  ->build_extract_dados_cadastrais()
-  ->build_extract_identificao_pessoas()
-  ->build_extract_participantes()
-  ->build_extract_ipocs()
-
-
-
-Transformer(DadosCadip, EntesPublicos, Ipocs)
-  __data_frame
-  __dados_cadip
-  __entes_publicos
-  __ipocs
-  -> tranform(): DadosCadip
-
-IEvent(DadosCadip)
-  -> execute()
-Registro1Event(Registro1Template)
-SNPEvent(SNPNotification)
-IOutputFormatter(Generic[T])
-Registro1OutPutFormatter(DadosCadip)
-  ->format(): Registro1Template
-SNPOutputFormatter(DadosCadip)
-  ->format(): SNPNotification
-Registro1Template
-SNPNotification
-
-Executor(Transformer, List[IEvent])
-  __transformer
-  __eventos
-  ->run()
-
-```
-
-
-
-
 ## Exemplo de filter
 ```python
 import sys
@@ -153,6 +60,64 @@ df_filtrado.show(5)
 job.commit()
 ```
 
+
+## Exemplo de extract com dataframe default
+```python
+import boto3
+from pyspark.sql.types import (
+    StructType, StructField, StringType, IntegerType,
+    LongType, DoubleType, BooleanType, TimestampType, DateType
+)
+
+
+def extract(self) -> Contratos:
+    try:
+        dynamic_frame: DynamicFrame = self.__glue_context.create_dynamic_frame.from_catalog(
+            database=self.__class__.__DATABASE_NAME,
+            table_name=self.__class__.__TABLE_NAME
+        )
+        data_frame = dynamic_frame.toDF()
+
+        if data_frame.rdd.isEmpty():
+            data_frame = self.__create_empty_dataframe()
+
+    except Exception:
+        data_frame = self.__create_empty_dataframe()
+
+    return Contratos(data_frame)
+
+
+def __create_empty_dataframe(self):
+    schema = self.__get_glue_schema()
+    return self.__glue_context.spark_session.createDataFrame([], schema)
+
+
+def __get_glue_schema(self) -> StructType:
+    glue_client = boto3.client("glue")
+    response = glue_client.get_table(
+        DatabaseName=self.__class__.__DATABASE_NAME,
+        Name=self.__class__.__TABLE_NAME
+    )
+
+    columns = response["Table"]["StorageDescriptor"]["Columns"]
+
+    type_mapping = {
+        "string": StringType(),
+        "int": IntegerType(),
+        "bigint": LongType(),
+        "double": DoubleType(),
+        "boolean": BooleanType(),
+        "timestamp": TimestampType(),
+        "date": DateType(),
+    }
+
+    fields = [
+        StructField(col["Name"], type_mapping.get(col["Type"], StringType()), True)
+        for col in columns
+    ]
+
+    return StructType(fields)
+```
 
 ## Exemplo modularização
 No Python, o conceito é exatamente o mesmo: queremos esconder a complexidade interna e expor apenas o que é necessário. Porém, a forma de fazer isso é filosoficamente diferente do Java.
