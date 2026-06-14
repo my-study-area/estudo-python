@@ -405,8 +405,12 @@ PosicoesDiaria(data_frame: DataFrame)
 
 
 Participantes(data_frame: DataFrame)
+  __CODIGO_TIPO_PARTICIPANTE_TOMADOR: 2
+
   @property
-  codigo_tipo_participante_tomador = 2
+  def codigo_tipo_participante_tomador(self)
+    return self.__CODIGO_TIPO_PARTICIPANTE_TOMADOR
+  
   def to_df()
 
 
@@ -607,3 +611,9 @@ if __name__ == '__main__':
 ```
 
 
+- atualize o @app/run_local.py adicionando SETORES_EMPRESAS_PUBLICAS_CUSTOMIZADO e ANOMESDIA no local_args e aplique as alterações necessárias. 
+- Atualize @app/main.py na variável args_list
+- Atualize ExtractBuilder para receber o GlueConfiguration e aplicar as alterações necessárias
+- Atualize ExtractBuilderFactory passando o ANOMESDIA no construor do Extract de Contratos, PosicoesDiaria, Participantes e Ipocs. No extract com dynamic frame passe como parametro no pushdown o ANOMESDIA. No extract de DadosCadastrais utilizar SETORES_EMPRESAS_PUBLICAS_CUSTOMIZADO e utilizar no parametro do construtor do dominio DadosCadastrais.
+
+vamos alinhar

@@ -18,7 +18,5 @@ class ParticipantesFakeExtract(IExtract[Participantes]):
             .option("multiline", "true")
             .json(arquivo_json)
         )
-        df.printSchema()
-        df.show()
         return Participantes(df)
 

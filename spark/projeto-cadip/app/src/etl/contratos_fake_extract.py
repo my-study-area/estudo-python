@@ -2,6 +2,7 @@ from pathlib import Path
 
 from awsglue.context import GlueContext
 from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql.functions import date_sub, current_date
 
 from src.domain.contratos import Contratos
 from src.extract import IExtract
@@ -12,7 +13,6 @@ class ContratosFakeExtract(IExtract[Contratos]):
         self.__glue_context: GlueContext = glue_context
         self.spark_session: SparkSession = self.__glue_context.spark_session
 
-
     def extract(self) -> Contratos:
         caminho_base = Path(__file__).parent.parent
         arquivo_json = str(caminho_base / "dados_contratos.json")
@@ -21,4 +21,5 @@ class ContratosFakeExtract(IExtract[Contratos]):
             .option("multiline", "true")
             .json(arquivo_json)
         )
+        df = df.withColumn("data_contratacao", date_sub(current_date(), 1))
         return Contratos(df)

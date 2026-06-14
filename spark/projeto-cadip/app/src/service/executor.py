@@ -1,32 +1,29 @@
-from src.etl.extract_builder import ExtractBuilder
-from src.service.glue_configuration import GlueConfiguration
+from __future__ import annotations
+import logging
+
+from src.etl.transformer import Transformer
+from src.etl.formatter_registro1 import FormatterRegistro1
+from src.etl.loader import Loader
+from src.etl.template_registro1 import TemplateRegistro1
+from src.service.business_exception import BusinessException
+
+logger = logging.getLogger(__name__)
 
 
 class Executor:
-    def __init__(self, glue_configuration: GlueConfiguration, builder: ExtractBuilder) -> None:
-        self.__builder = builder
-        self.__context: GlueConfiguration = glue_configuration
+    def __init__(self, transformer: Transformer, formatter: FormatterRegistro1, loader: Loader) -> None:
+        self.__transformer = transformer
+        self.__formatter = formatter
+        self.__loader = loader
 
     def run(self) -> None:
-        print('running executor ...')
-        self.__show_all_data_frames()
-
-    def __show_all_data_frames(self):
-        extract_contrato = self.__builder.build_extract_contrato()
-        extract_contrato.extract().to_df().show()
-
-        extract_posicoes_diarias = self.__builder.build_extract_posicoes_diarias()
-        extract_posicoes_diarias.extract().to_df().show()
-
-        extract_participantes = self.__builder.build_extract_participantes()
-        extract_participantes.extract().to_df().show()
-
-        extract_ipocs = self.__builder.build_extract_ipocs()
-        extract_ipocs.extract().to_df().show()
-
-        extract_identificacao_pessoas = self.__builder.build_extract_identificao_pessoas()
-        extract_identificacao_pessoas.extract().to_df().show()
-
-        extract_dados_cadastrais = self.__builder.build_extract_dados_cadastrais()
-        extract_dados_cadastrais.extract().to_df().show()
-
+        try:
+            dados_cadip = self.__transformer.transform()
+            template = TemplateRegistro1(self.__formatter.format(dados_cadip))
+            self.__loader.load(template)
+            logger.info('Processamento realizado com sucesso.')
+        except BusinessException as ex:
+            logger.info('Processamento finalizado. Motivo: %s', ex)
+        except Exception:
+            logger.exception('Erro ao realizar processamento')
+            raise
