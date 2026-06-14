@@ -19,7 +19,7 @@ class Executor:
     def run(self) -> None:
         try:
             dados_cadip = self.__transformer.transform()
-            template = TemplateRegistro1(self.__formatter.format(dados_cadip))
+            template = self.__formatter.format(dados_cadip)
             self.__loader.load(template)
             logger.info('Processamento realizado com sucesso.')
         except BusinessException as ex:

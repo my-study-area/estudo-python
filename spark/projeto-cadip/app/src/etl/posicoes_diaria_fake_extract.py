@@ -5,7 +5,8 @@ from src.domain.posicoes_diaria import PosicoesDiaria
 from src.extract import IExtract
 
 class PosicoesDiariaFakeExtract(IExtract[PosicoesDiaria]):
-    def __init__(self, glue_context: GlueContext) -> None:
+    def __init__(self, glue_context: GlueContext, anomesdia: str) -> None:
+        self.__anomesdia: str = anomesdia
         self.spark_session: SparkSession = glue_context.spark_session
 
     def extract(self) -> PosicoesDiaria:

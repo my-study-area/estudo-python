@@ -52,7 +52,8 @@ def run_job() -> None:
 
 
 if __name__ == '__main__':
-    args_list = ['JOB_NAME', 'DATABASE_NAME', 'TABLE_NAME', 'ENVIRONMENT']
+    args_list = ['JOB_NAME', 'DATABASE_NAME', 'TABLE_NAME', 'ENVIRONMENT',
+                 'ANOMESDIA', 'SETORES_EMPRESAS_PUBLICAS_CUSTOMIZADO']
     args = getResolvedOptions(sys.argv, args_list)
 
     sc = SparkContext.getOrCreate()

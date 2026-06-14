@@ -28,7 +28,10 @@ def run() -> None:
         "JOB_NAME": "local_job",
         "DATABASE_NAME": "db_custodia",
         "TABLE_NAME": "tb_contratos",
-        "ENVIRONMENT": "LOCAL"
+        "ENVIRONMENT": "LOCAL",
+        "ANOMESDIA": "20260101",
+        # "SETORES_EMPRESAS_PUBLICAS_CUSTOMIZADO": "1000,2000",
+        "SETORES_EMPRESAS_PUBLICAS_CUSTOMIZADO": "2001",
     }
 
     glue_config = GlueConfiguration(local_args, mock_glue_context)

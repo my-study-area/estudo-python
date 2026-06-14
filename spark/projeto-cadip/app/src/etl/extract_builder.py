@@ -31,11 +31,9 @@ from src.etl.ipocs_fake_extract import IpocsFakeExtract
 
 
 class ExtractBuilder(ABC):
-    """
-    Interface/Classe abstrata base para construção de extratores de dados.
-    """
-    def __init__(self, glue_context: GlueContext) -> None:
-        self._glue_context = glue_context
+    def __init__(self, glue_config: GlueConfiguration) -> None:
+        self._glue_config = glue_config
+        self._glue_context: GlueContext = glue_config.glue_context
 
     @abstractmethod
     def build_extract_contrato(self) -> IExtract[Contratos]:
@@ -63,61 +61,46 @@ class ExtractBuilder(ABC):
 
 
 class RealExtractBuilder(ExtractBuilder):
-    """
-    Implementação concreta do builder que instancia extratores reais
-    conectados ao catálogo de dados do AWS Glue.
-    """
     def build_extract_contrato(self) -> IExtract[Contratos]:
-        return ContratosExtract(self._glue_context)
+        return ContratosExtract(self._glue_context, self._glue_config.anomesdia)
 
     def build_extract_posicoes_diarias(self) -> IExtract[PosicoesDiaria]:
-        return PosicoesDiariaExtract(self._glue_context)
+        return PosicoesDiariaExtract(self._glue_context, self._glue_config.anomesdia)
 
     def build_extract_dados_cadastrais(self) -> IExtract[DadosCadastrais]:
-        return DadosCadastraisExtract(self._glue_context)
+        return DadosCadastraisExtract(self._glue_context, self._glue_config.setores_empresas_publicas_customizado)
 
     def build_extract_identificao_pessoas(self) -> IExtract[IdentificacaoPessoas]:
         return IdentificacaoPessoasExtract(self._glue_context)
 
     def build_extract_participantes(self) -> IExtract[Participantes]:
-        return ParticipantesExtract(self._glue_context)
+        return ParticipantesExtract(self._glue_context, self._glue_config.anomesdia)
 
     def build_extract_ipocs(self) -> IExtract[Ipocs]:
-        return IpocsExtract(self._glue_context)
+        return IpocsExtract(self._glue_context, self._glue_config.anomesdia)
 
 
 class FakeExtractBuilder(ExtractBuilder):
-    """
-    Implementação concreta do builder que instancia extratores mockados (fakes)
-    para desenvolvimento e validação em ambiente local.
-    """
     def build_extract_contrato(self) -> IExtract[Contratos]:
-        return ContratosFakeExtract(self._glue_context)
+        return ContratosFakeExtract(self._glue_context, self._glue_config.anomesdia)
 
     def build_extract_posicoes_diarias(self) -> IExtract[PosicoesDiaria]:
-        return PosicoesDiariaFakeExtract(self._glue_context)
+        return PosicoesDiariaFakeExtract(self._glue_context, self._glue_config.anomesdia)
 
     def build_extract_dados_cadastrais(self) -> IExtract[DadosCadastrais]:
-        return DadosCadastraisFakeExtract(self._glue_context)
+        return DadosCadastraisFakeExtract(self._glue_context, self._glue_config.setores_empresas_publicas_customizado)
 
     def build_extract_identificao_pessoas(self) -> IExtract[IdentificacaoPessoas]:
         return IdentificacaoPessoasFakeExtract(self._glue_context)
 
     def build_extract_participantes(self) -> IExtract[Participantes]:
-        return ParticipantesFakeExtract(self._glue_context)
+        return ParticipantesFakeExtract(self._glue_context, self._glue_config.anomesdia)
 
     def build_extract_ipocs(self) -> IExtract[Ipocs]:
-        return IpocsFakeExtract(self._glue_context)
+        return IpocsFakeExtract(self._glue_context, self._glue_config.anomesdia)
 
 
 class ExtractBuilderFactory:
-    """
-    Factory responsável por criar a instância correta de ExtractBuilder
-    com base no ambiente resolvido por GlueConfiguration. Ex:
-    Cria um FakeExtractBuilder para um ambiente LOCAL e um RealExtractBuilder
-    para ambientes DEV, HOM ou PROD.
-    """
-
     @staticmethod
     def create(glue_config: GlueConfiguration) -> ExtractBuilder:
         builder_mapping: Dict[str, Type[ExtractBuilder]] = {
@@ -129,6 +112,4 @@ class ExtractBuilderFactory:
         environment = glue_config.environment.upper()
         extract_builder = builder_mapping.get(environment, RealExtractBuilder)
 
-        return extract_builder(glue_config.glue_context)
-
-
+        return extract_builder(glue_config)

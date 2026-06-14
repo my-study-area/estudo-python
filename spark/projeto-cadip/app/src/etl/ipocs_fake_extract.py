@@ -5,7 +5,8 @@ from src.domain.ipocs import Ipocs
 from src.extract import IExtract
 
 class IpocsFakeExtract(IExtract[Ipocs]):
-    def __init__(self, glue_context: GlueContext) -> None:
+    def __init__(self, glue_context: GlueContext, anomesdia: str) -> None:
+        self.__anomesdia: str = anomesdia
         self.spark_session: SparkSession = glue_context.spark_session
 
     def extract(self) -> Ipocs:

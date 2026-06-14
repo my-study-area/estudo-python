@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 from awsglue.context import GlueContext
 from pyspark.sql import SparkSession
 
@@ -7,7 +8,8 @@ from src.extract import IExtract
 
 
 class DadosCadastraisFakeExtract(IExtract[DadosCadastrais]):
-    def __init__(self, glue_context: GlueContext) -> None:
+    def __init__(self, glue_context: GlueContext, setores_empresas_publicas_customizado: Optional[str]) -> None:
+        self.__setores_empresas_publicas_customizado: Optional[str] = setores_empresas_publicas_customizado
         self.spark: SparkSession = glue_context.spark_session
 
     def extract(self) -> DadosCadastrais:
@@ -18,5 +20,4 @@ class DadosCadastraisFakeExtract(IExtract[DadosCadastrais]):
             .option("multiline", "true")
             .json(arquivo_json)
         )
-        return DadosCadastrais(df)
-
+        return DadosCadastrais(df, self.__setores_empresas_publicas_customizado)

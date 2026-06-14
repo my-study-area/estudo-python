@@ -38,6 +38,7 @@ class Contratos:
             .filter(col("dados.setor_empresa").cast("int").isin(dados_cadastrais.setores_empresas_publicas))
             .select("contratos.*")
         )
+        logger.info('Total de registros filtrados: %s', df_filtrado.count())
         return Contratos(df_filtrado)
 
     def to_df(self) -> DataFrame:
